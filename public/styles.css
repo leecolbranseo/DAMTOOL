@@ -1,16 +1,28 @@
 :root {
-  --ink: #14151a;
+  --ink: #1d1d1d;
   --paper: #fafaf8;
   --card: #ffffff;
   --line: #e4e3de;
   --muted: #6b6d76;
 
-  /* Band accents — used only where the band itself is the subject (badge, result header) */
-  --band-functional: #6fb7dc;
-  --band-connected: #7fc9a6;
-  --band-integrated: #e8c25e;
-  --band-adaptive: #e79a5a;
-  --band-intelligent: #d98fb3;
+  /* Real Fresh Egg brand tokens, confirmed from the production WPRA source
+     (wpraEmbed.module.css uses --brand-raven/mint/coral/snow/cloud; the
+     literal hex values below are confirmed from the WPRA/DAM email HTML,
+     which use #41cc9d and #ff7751 directly) */
+  --brand-raven: #1d1d1d;
+  --brand-mint: #41cc9d;
+  --brand-coral: #ff7751;
+  --brand-snow: #ffffff;
+  --brand-cloud: #eeeeee;
+  --brand-cloud-grid: #e4e3de;
+
+  /* Band accents — matched to the "Data maturity journey" slide's palette,
+     used only where the band itself is the subject (badge, result header) */
+  --band-fragmented: #6fb7dc;
+  --band-foundational: #7fc9a6;
+  --band-operational: #e8c25e;
+  --band-optimising: #e79a5a;
+  --band-strategic: #d98fb3;
 
   --radius: 3px;
   --font-display: 'Space Grotesk', system-ui, sans-serif;
@@ -21,7 +33,7 @@
 
 body {
   margin: 0;
-  background: var(--paper);
+  background: var(--brand-cloud);
   color: var(--ink);
   font-family: var(--font-body);
   font-size: 16px;
@@ -38,20 +50,27 @@ body {
   font-size: 15px;
   letter-spacing: -0.01em;
   color: var(--ink);
+  z-index: 2;
 }
 .wordmark span { font-weight: 500; opacity: 0.55; }
 
 .stage {
   min-height: 100vh;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  padding: 96px 20px 48px;
+  padding: 100px 20px 48px;
 }
 
 .card {
   width: 100%;
-  max-width: 560px;
+  max-width: 640px;
+  background: transparent;
+  padding: 0;
+}
+
+/* Screens that DO want the enclosed white card look (email gate, results) */
+.card.card--boxed {
   background: var(--card);
   border: 1px solid var(--line);
   border-radius: var(--radius);
@@ -59,43 +78,42 @@ body {
 }
 
 @media (max-width: 480px) {
-  .card { padding: 28px 22px; }
+  .card.card--boxed { padding: 28px 22px; }
   .stage { padding: 80px 12px 32px; }
 }
 
 .progress-row {
   display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 28px;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 32px;
 }
 .progress-count {
   font-family: var(--font-display);
   font-size: 13px;
-  color: var(--muted);
-  white-space: nowrap;
+  font-weight: 700;
+  color: var(--ink);
 }
 .progress-track {
-  flex: 1;
-  height: 3px;
-  background: var(--line);
-  border-radius: 2px;
+  height: 6px;
+  background: var(--brand-cloud-grid);
+  border-radius: 0;
   overflow: hidden;
 }
 .progress-fill {
   height: 100%;
-  background: var(--ink);
-  transition: width 0.3s ease;
+  background: var(--brand-mint);
+  transition: width 250ms ease;
 }
 
 h1, h2, h3 {
   font-family: var(--font-display);
-  font-weight: 600;
-  line-height: 1.2;
+  font-weight: 700;
+  line-height: 1.15;
   margin: 0 0 8px;
 }
-h1 { font-size: 26px; letter-spacing: -0.01em; }
-h2 { font-size: 21px; }
+h1 { font-size: 34px; letter-spacing: -0.01em; }
+h2 { font-size: 22px; }
 p { margin: 0 0 16px; color: var(--ink); }
 .muted { color: var(--muted); font-size: 14px; }
 
@@ -110,29 +128,64 @@ p { margin: 0 0 16px; color: var(--ink); }
 .options {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  margin-top: 20px;
+  gap: 12px;
+  margin-top: 28px;
 }
 
+/* Full-width white rows with a mint square badge — matches the real WPRA
+   quiz UI rather than a bordered "card" look */
 .option-btn {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 16px;
   text-align: left;
-  padding: 14px 16px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  background: var(--card);
+  padding: 20px 22px;
+  border: none;
+  border-radius: 0;
+  background: var(--brand-snow);
   font-family: var(--font-body);
-  font-size: 15px;
+  font-size: 17px;
+  font-weight: 700;
   color: var(--ink);
   cursor: pointer;
-  transition: border-color 0.15s ease, background 0.15s ease;
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  transition: outline-color 100ms;
 }
-.option-btn:hover { border-color: var(--ink); }
-.option-btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.option-btn:hover:not(:disabled) { background: #f7f7f5; }
+.option-btn:focus-visible { outline-color: var(--brand-raven); }
+.option-btn:disabled { cursor: default; }
+
 .option-btn .key {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  background: var(--brand-mint);
+  color: var(--brand-raven);
   font-family: var(--font-display);
-  font-weight: 600;
-  margin-right: 10px;
-  color: var(--muted);
+  font-weight: 700;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+/* The actual "Raven flash" — a hard step animation from white to raven at
+   the halfway point, ported directly from wpraEmbed.module.css's
+   optionSelectedBackground/optionSelectedText keyframes (350ms / 100ms). */
+.option-btn.flash-raven {
+  animation: optionFlashBg 350ms steps(1, end) forwards;
+}
+.option-btn.flash-raven .option-text {
+  animation: optionFlashText 100ms steps(1, end) forwards;
+}
+@keyframes optionFlashBg {
+  0%, 49% { background: var(--brand-snow); }
+  50%, 100% { background: var(--brand-raven); }
+}
+@keyframes optionFlashText {
+  0%, 49% { color: inherit; }
+  50%, 100% { color: var(--brand-snow); }
 }
 
 .band-badge {
@@ -148,6 +201,20 @@ p { margin: 0 0 16px; color: var(--ink); }
   color: var(--ink);
 }
 .band-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+.tease-prefix {
+  font-size: 16px;
+  color: var(--muted);
+  margin: 0 0 6px;
+}
+.tease-prefix strong { color: var(--ink); }
+
+.tease-incentive {
+  font-size: 15px;
+  color: var(--ink);
+  font-weight: 600;
+  margin: 20px 0 4px;
+}
 
 .form-row { margin-bottom: 14px; }
 .form-row label {
@@ -165,32 +232,47 @@ p { margin: 0 0 16px; color: var(--ink); }
   font-size: 15px;
   background: var(--paper);
 }
-.form-row input:focus-visible { outline: 2px solid var(--ink); outline-offset: 1px; }
+.form-row input:focus-visible { outline: 2px solid var(--brand-raven); outline-offset: 1px; }
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; }
 @media (max-width: 480px) { .form-grid { grid-template-columns: 1fr; } }
 
+/* Pill-shaped CTA with arrow, matching the real "Continue to full diagnosis"
+   button rather than a full-width rectangle */
 .primary-btn {
-  width: 100%;
-  padding: 14px;
-  margin-top: 8px;
-  background: var(--ink);
-  color: var(--paper);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  width: fit-content;
+  padding: 16px 26px;
+  margin-top: 12px;
+  background: var(--brand-raven);
+  color: var(--brand-snow);
   border: none;
-  border-radius: var(--radius);
+  border-radius: 999px;
   font-family: var(--font-display);
-  font-weight: 600;
+  font-weight: 700;
   font-size: 15px;
   cursor: pointer;
 }
 .primary-btn:hover { opacity: 0.9; }
 .primary-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.primary-btn .arrow { font-size: 16px; }
+
+/* Full-width variant, used only inside the boxed email-gate form */
+.primary-btn.primary-btn--block {
+  width: 100%;
+  justify-content: center;
+  border-radius: var(--radius);
+}
 
 .constraint-box {
-  border-left: 3px solid var(--ink);
-  padding: 4px 0 4px 16px;
-  margin: 20px 0;
+  background: var(--brand-snow);
+  border-left: 4px solid var(--brand-coral);
+  padding: 28px 30px;
+  margin: 24px 0;
 }
-.constraint-box h3 { font-size: 15px; margin-bottom: 4px; }
+.constraint-box .tease-label { margin: 0 0 6px; font-size: 15px; color: var(--ink); }
+.constraint-box h3 { font-size: 22px; margin: 0; }
 .constraint-box p { font-size: 14px; color: var(--muted); margin: 0; }
 
 .secondary-list { font-size: 14px; color: var(--muted); }

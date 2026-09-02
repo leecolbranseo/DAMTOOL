@@ -13,9 +13,11 @@ the dev spec — so this code can go straight to a dev with no conversion risk.
   built in: priority-based tie-break, constraint eligibility floor (a pillar
   only qualifies as "biggest limitation" on a C/D answer), and a "no
   constraint found" fallback that's a genuine part of the design, not a gap
-  - Band structure: 5 bands (IX Maturity Curve — Functional → Connected →
-  Integrated → Adaptive → Intelligent), thresholds derived from a 7-pillar,
-  equal-weight, 4-point scale (range 7–28)
+  - Band structure: 5 bands mapped to the real "Data maturity journey" curve
+  (Fragmented → Foundational → Operational → Optimising → Strategic), with
+  headline/intro copy drawn from that framework's client-situation and
+  commercial-risk language. Thresholds derived from a 7-pillar, equal-weight,
+  4-point scale (range 7–28)
 - Submit endpoint validates required contact fields but does **not** block
   submission when `primary_constraint_name` is legitimately empty
 - `user_name` is resolved once, server-side, from `user_firstname` +
@@ -30,10 +32,6 @@ the dev spec — so this code can go straight to a dev with no conversion risk.
 - Tie-break priority ranking — currently defaults to pillar order 1–7
 - Per-pillar weighting — currently equal (1 each), matching the spec's
   default recommendation
-- Band names use the spec's wording (Functional/Connected/Integrated/
-  Adaptive/Intelligent) — note this differs from the "Fragmented/
-  Foundational/Operational/Optimising/Strategic" labels on the "Data
-  maturity journey" slide, worth reconciling before this is finalised
 - Real Brevo template IDs / API key — the send call in `routes/submit.js`
   is stubbed out, ready to wire up
 
@@ -62,6 +60,42 @@ see the "emails" that would have been sent via Brevo.
    ```
 5. Codespaces will prompt to open a forwarded port — click through to test
    the live quiz in your browser.
+
+## Deploying to Cloudflare for a shareable test link
+
+This project also deploys as a Cloudflare Worker, using Cloudflare's native
+Express support (`nodejs_compat` + `httpServerHandler`) rather than a
+separate rewrite. Two files make this work:
+
+- `worker-entry.js` — the Cloudflare entry point, wrapping the same
+  `lib/createApp.js` Express app used by `server.js` locally
+- `wrangler.jsonc` — Worker config, including an `assets` block that serves
+  `public/` directly (Workers have no filesystem, so `express.static()`
+  only works locally — static files are handled outside Express on
+  Cloudflare)
+
+```bash
+npm install -g wrangler   # or use `npx wrangler` throughout instead
+wrangler login
+npm run deploy             # runs `wrangler deploy`
+```
+
+Wrangler prints a `*.workers.dev` URL on success — that's the link to
+share for testing.
+
+**Leave `BREVO_API_KEY` unset for a shared test link.** The app already
+falls back to logging Brevo payloads instead of sending them when the key
+is missing — exactly what you want so a stranger clicking your test link
+never triggers a real email. Run `wrangler tail` alongside it to watch
+those logged payloads live. If you do want real sends, set the key with
+`wrangler secret put BREVO_API_KEY` — worth a quick sanity check afterwards
+that `process.env.BREVO_API_KEY` reads correctly under `nodejs_compat`,
+since environment variable handling is a newer part of that compatibility
+layer.
+
+Note: `require('dotenv').config()` in `server.js` is local-only and never
+runs in `worker-entry.js` — there's no `.env` file on Cloudflare, so this
+isn't needed there in the first place.
 
 ## Testing checklist (carried over from the spec)
 

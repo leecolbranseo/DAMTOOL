@@ -9,6 +9,9 @@
 //   1. Confirm/rewrite the pillar wording (draft below, from spec v0.1)
 //   2. Confirm the tie-break priority ranking (currently = pillar order, 1–7)
 //   3. Confirm per-pillar weighting (currently equal, weight 1 each)
+// Band names/copy below ARE confirmed — mapped to the real "Data maturity
+// journey" curve (Fragmented/Foundational/Operational/Optimising/Strategic),
+// not the spec draft's placeholder band names.
 
 /**
  * Each pillar has 4 answer options (A–D) scored 4/3/2/1.
@@ -124,56 +127,117 @@ const PILLARS = [
 const CONSTRAINT_ELIGIBILITY_FLOOR = 2; // raw score <= this qualifies
 
 /**
- * Band structure — Option B, Fresh Egg's IX Maturity Curve (5 bands).
+ * Band structure — mapped to Fresh Egg's actual "Data maturity journey"
+ * curve (Fragmented → Foundational → Operational → Optimising → Strategic),
+ * matching the client-situation/commercial-risk language already used on
+ * that framework, not the spec draft's placeholder band names.
  * Thresholds are derived from the 7-pillar, equal-weight, 4-point-scale
  * config above: min possible = 7, max possible = 28.
  * ⚠️ If pillar count or weighting changes, these thresholds must be recalculated.
  */
 const BANDS = [
   {
-    id: 'functional',
-    name: 'Functional',
+    id: 'fragmented',
+    name: 'Fragmented',
+    color: 'blue',
     min: 7,
     max: 10,
-    headline: 'Your data foundations need attention',
+    headline: 'Conflicting data is holding back good decisions',
     intro:
-      "Right now, data work is largely manual and reactive. That's normal at this stage — the opportunity is in building reliable foundations before layering on anything more advanced.",
+      'Different reports show different figures, and visibility across the business is poor. Right now, decisions tend to rest on assumptions rather than evidence — which risks wasted investment, stakeholder misalignment, and missed growth opportunities.',
+    teaseHeadline: 'Your data has real gaps, with a clear path to close them',
+    teaseCopy:
+      "We've identified structural gaps that are significantly limiting your ability to make confident, data-led decisions.",
+    whatThisMeansHeadline: 'These gaps typically result in:',
+    whatThisMeansPoints: [
+      'Decisions based on assumptions rather than evidence',
+      'Wasted investment and misaligned stakeholders',
+      'Missed growth opportunities',
+    ],
+    emailAccent: { text: '#3E86AE', bg: '#E8F3FA' },
+    recommendedService: 'Data Landscape Audit',
   },
   {
-    id: 'connected',
-    name: 'Connected',
+    id: 'foundational',
+    name: 'Foundational',
+    color: 'green',
     min: 11,
     max: 14,
-    headline: "You're starting to join the dots",
+    headline: 'Your data is becoming trusted, but it takes real effort',
     intro:
-      'Some of your data sources and processes are starting to connect, but trust and consistency still vary across the business.',
+      "Data is starting to be trusted, but analysts still spend hours cleaning it by hand. That means teams spend more time finding, validating and reconciling data than acting on it — slowing progress and adding operational cost.",
+    teaseHeadline: 'Your data foundations are forming, with clear next steps ahead',
+    teaseCopy:
+      "We've identified gaps that are limiting how efficiently your team can turn data into action.",
+    whatThisMeansHeadline: 'These gaps typically result in:',
+    whatThisMeansPoints: [
+      'Analysts spending hours cleaning data instead of acting on it',
+      'Slower progress towards a trusted single view',
+      'Increasing operational cost',
+    ],
+    emailAccent: { text: '#3F9973', bg: '#E9F7F0' },
+    recommendedService: 'Unified Analytics Platform (Mastertable)',
   },
   {
-    id: 'integrated',
-    name: 'Integrated',
+    id: 'operational',
+    name: 'Operational',
+    color: 'yellow',
     min: 15,
     max: 18,
-    headline: 'Your data works as a connected system',
+    headline: 'Reporting is improving, but insight often stalls before action',
     intro:
-      'Data flows reasonably well across your organisation. The next step is turning that connectivity into faster, more confident decisions.',
+      "Reporting and monitoring are getting better, and dashboards exist — but they don't always get acted on. The organisation can see what's happening, but struggles to consistently translate that insight into improved marketing performance and commercial outcomes.",
+    teaseHeadline: 'Your reporting is solid, with room to turn insight into action',
+    teaseCopy: "We've identified where insight is stalling before it reaches a decision.",
+    whatThisMeansHeadline: 'This typically results in:',
+    whatThisMeansPoints: [
+      'Dashboards that exist but rarely get acted on',
+      'Insight that does not consistently reach commercial decisions',
+      'Marketing performance and reporting confidence out of step',
+    ],
+    emailAccent: { text: '#B8951F', bg: '#FBF3DC' },
+    recommendedService: 'Automated Anomaly & Insight Detection',
   },
   {
-    id: 'adaptive',
-    name: 'Adaptive',
+    id: 'optimising',
+    name: 'Optimising',
+    color: 'orange',
     min: 19,
     max: 22,
-    headline: 'You respond quickly to what the data shows',
+    headline: 'Targeting is sharper, but performance gains are plateauing',
     intro:
-      'Your organisation is already using data to adapt — the opportunity now is in sharpening the areas holding you back from full maturity.',
+      "Targeting and attribution have improved, but marketing performance is starting to plateau. Further gains are getting harder to achieve, and investment may not yet be directed towards the highest-value opportunities.",
+    teaseHeadline: 'Your data maturity is strong, with room to sharpen further',
+    teaseCopy: "We've identified where further gains are getting harder to reach.",
+    whatThisMeansHeadline: 'This typically results in:',
+    whatThisMeansPoints: [
+      'Performance gains becoming harder to achieve',
+      'Investment not always directed to the highest-value opportunities',
+      'Marketing performance starting to plateau',
+    ],
+    emailAccent: { text: '#C97A2E', bg: '#FCEEE0' },
+    recommendedService: 'Smart Bidding Intelligence',
   },
   {
-    id: 'intelligent',
-    name: 'Intelligent',
+    id: 'strategic',
+    name: 'Strategic',
+    color: 'pink',
     min: 23,
     max: 28,
-    headline: "You're operating at a highly data-driven level",
+    headline: "You're making predictive, investment-led decisions",
     intro:
-      'Your data and analytics capability is a genuine competitive advantage. The focus now is fine-tuning rather than fixing.',
+      'Your organisation is already looking at AI, forecasting and predictive modelling to guide decisions. The main commercial risk now is competitors with more advanced data capabilities responding faster and capturing market share.',
+    teaseHeadline: 'Your data maturity is excelling, with fine-tuning still to gain',
+    teaseCopy:
+      "Even top performers find new opportunities with a closer look — here's where yours might be.",
+    whatThisMeansHeadline: 'With minimal constraints, your business is well placed to:',
+    whatThisMeansPoints: [
+      'Make predictive, investment-led decisions with confidence',
+      'Respond faster than competitors relying on less mature data',
+      'Capture market share through faster iteration',
+    ],
+    emailAccent: { text: '#B45C86', bg: '#FBEAF1' },
+    recommendedService: 'Marketing Mix Modelling (MMM)',
   },
 ];
 

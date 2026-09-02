@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Inter', Arial, sans-serif; background-color: #f4f4f4;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f4f4f4; padding: 20px 0;">
+        <tr>
+            <td align="center">
+                <table width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 0;">
+
+                    <!-- Fresh Egg Logo -->
+                    <tr>
+                        <td style="background-color: #1d1d1d; padding: 30px 20px; text-align: center;">
+                            <img src="https://cdn.freshegg.co.uk/m/0/fresh-egg-default-logo.png" alt="Fresh Egg" style="max-width: 200px; height: auto; display: block; margin: 0 auto;">
+                        </td>
+                    </tr>
+
+                    <!-- Header -->
+                    <tr>
+                        <td style="background-color: #1d1d1d; padding: 20px 20px 30px 20px; text-align: center; border-top: 1px solid #333;">
+                            <h1 style="margin: 0; font-size: 24px; color: #ffffff; font-weight: 700;">New Data &amp; Analytics Maturity Assessment Lead</h1>
+                        </td>
+                    </tr>
+
+                    <!-- Body Content -->
+                    <tr>
+                        <td style="padding: 40px 30px;">
+
+                            <!-- Contact Information -->
+                            <h2 style="font-size: 18px; color: #1d1d1d; border-bottom: 2px solid #41cc9d; padding-bottom: 8px; margin-top: 0;">Contact Information</h2>
+
+                            <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 30px;">
+                                <tr>
+                                    <td style="padding: 8px 0; font-weight: 600; color: #6B6B6B; width: 140px;">Name:</td>
+                                    <td style="padding: 8px 0; color: #1d1d1d;">{{ params.user_firstname }} {{ params.user_surname }}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 8px 0; font-weight: 600; color: #6B6B6B;">Job Title:</td>
+                                    <td style="padding: 8px 0; color: #1d1d1d;">{{ params.user_jobtitle }}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 8px 0; font-weight: 600; color: #6B6B6B;">Company:</td>
+                                    <td style="padding: 8px 0; color: #1d1d1d;">{{ params.company_name }}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 8px 0; font-weight: 600; color: #6B6B6B;">Email:</td>
+                                    <td style="padding: 8px 0;"><a href="mailto:{{ params.user_email }}" style="color: #41cc9d; text-decoration: none;">{{ params.user_email }}</a></td>
+                                </tr>
+                            </table>
+
+                            <!-- Assessment Results -->
+                            <h2 style="font-size: 18px; color: #1d1d1d; border-bottom: 2px solid #41cc9d; padding-bottom: 8px;">Assessment Results</h2>
+
+                            <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 30px;">
+                                <tr>
+                                    <td style="padding: 8px 0; font-weight: 600; color: #6B6B6B; width: 140px;">Maturity Band:</td>
+                                    <td style="padding: 8px 0; color: {{ params.band_color }};"><strong>{{ params.band }}</strong></td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 8px 0; font-weight: 600; color: #6B6B6B;">Maturity Score:</td>
+                                    <td style="padding: 8px 0; color: #1d1d1d;">{{ params.total_score }} / 28</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 8px 0; font-weight: 600; color: #6B6B6B;">Primary Constraint:</td>
+                                    <td style="padding: 8px 0; color: #1d1d1d;">{{ params.primary_constraint_name }}</td>
+                                </tr>
+                            </table>
+
+                            <!-- Main Highlight -->
+                            {% if params.has_constraint %}
+                            <div style="background: linear-gradient(135deg, #e8f7f2 0%, #d4f0e6 100%); border-left: 4px solid #41cc9d; padding: 24px; margin: 30px 0;">
+                                <p style="margin: 0 0 10px 0; font-weight: 600; color: #1d1d1d;">Their Biggest Opportunity:</p>
+                                <p style="font-size: 20px; font-weight: 700; color: #41cc9d; margin: 10px 0; line-height: 1;">{{ params.primary_constraint_name }}</p>
+                                <p style="margin: 0; font-size: 14px; color: #6B6B6B; line-height: 1.6;">{{ params.primary_constraint_description }}</p>
+                            </div>
+                            {% else %}
+                            <div style="background: linear-gradient(135deg, #e8f7f2 0%, #d4f0e6 100%); border-left: 4px solid #41cc9d; padding: 24px; margin: 30px 0;">
+                                <p style="margin: 0 0 10px 0; font-weight: 600; color: #1d1d1d;">No significant limitation identified.</p>
+                                <p style="margin: 0; font-size: 14px; color: #6B6B6B; line-height: 1.6;">This is a strong, well-rounded lead — none of the 7 pillars scored below a C. Worth a different conversation angle than a typical constraint-led pitch.</p>
+                            </div>
+                            {% endif %}
+
+                            <!-- Secondary Constraints -->
+                            <h2 style="font-size: 16px; color: #1d1d1d; margin: 24px 0 12px 0;">Other Constraints Identified:</h2>
+                            {{ params.secondary_constraints_html | safe }}
+
+                            <!-- Lead Quality -->
+                            <div style="background: #1d1d1d; color: white; padding: 24px; text-align: center; margin-top: 30px;">
+                                <p style="margin: 0 0 12px 0; font-size: 16px; font-weight: 600;">⚡ High-Intent Lead</p>
+                                <p style="margin: 0; font-size: 14px; color: rgba(255, 255, 255, 0.8);">They have completed the full assessment and understand their maturity constraints. Given their {{ params.band }} band, it's a good opportunity to discuss {{ params.recommended_service }}. Check <a href="https://freshegg.pipedrive.com/" style="color: #41cc9d;">Pipedrive</a> for details.</p>
+                            </div>
+
+                        </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                        <td style="background-color: #eeeeee; padding: 20px 30px; text-align: center;">
+                            <p style="margin: 0; font-size: 12px; color: #999999;">
+                                Sent from Fresh Egg Data &amp; Analytics Maturity Assessment
+                            </p>
+                        </td>
+                    </tr>
+
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

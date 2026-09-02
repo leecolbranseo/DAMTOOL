@@ -4,14 +4,15 @@ const state = {
   pillars: [],
   currentIndex: 0,
   answers: {}, // pillarId -> key ('A'|'B'|'C'|'D')
+  preview: null, // set once /api/preview responds, after the last question
 };
 
 const BAND_ACCENT = {
-  Functional: 'var(--band-functional)',
-  Connected: 'var(--band-connected)',
-  Integrated: 'var(--band-integrated)',
-  Adaptive: 'var(--band-adaptive)',
-  Intelligent: 'var(--band-intelligent)',
+  Fragmented: 'var(--band-fragmented)',
+  Foundational: 'var(--band-foundational)',
+  Operational: 'var(--band-operational)',
+  Optimising: 'var(--band-optimising)',
+  Strategic: 'var(--band-strategic)',
 };
 
 init();
@@ -31,7 +32,7 @@ function renderQuestion() {
   stage.innerHTML = `
     <div class="card">
       <div class="progress-row">
-        <span class="progress-count">${stepNum} / ${total}</span>
+        <span class="progress-count">Step ${stepNum} of ${total}</span>
         <div class="progress-track">
           <div class="progress-fill" style="width:${(stepNum / total) * 100}%"></div>
         </div>
@@ -45,27 +46,91 @@ function renderQuestion() {
   pillar.options.forEach((opt) => {
     const btn = document.createElement('button');
     btn.className = 'option-btn';
-    btn.innerHTML = `<span class="key">${opt.key}</span>${escapeHtml(opt.text)}`;
-    btn.addEventListener('click', () => {
-      state.answers[pillar.id] = opt.key;
-      if (state.currentIndex < state.pillars.length - 1) {
-        state.currentIndex += 1;
-        renderQuestion();
-      } else {
-        renderTease();
-      }
-    });
+    btn.type = 'button';
+    btn.innerHTML = `<span class="key">${opt.key}</span><span class="option-text">${escapeHtml(opt.text)}</span>`;
+    btn.addEventListener('click', () => selectOption(pillar.id, opt.key, btn, optionsEl));
     optionsEl.appendChild(btn);
   });
 }
 
+/**
+ * Mirrors the real WPRA timing: flash the selected option to Raven via CSS
+ * animation, disable the rest of the group so a second click can't land
+ * mid-animation, then advance after 500ms (matching the production
+ * setTimeout) — either to the next question or, on the last one, to a
+ * server-scored tease screen.
+ */
+function selectOption(pillarId, key, selectedBtn, optionsEl) {
+  const buttons = optionsEl.querySelectorAll('.option-btn');
+  buttons.forEach((b) => { b.disabled = true; });
+  selectedBtn.classList.add('flash-raven');
+
+  state.answers[pillarId] = key;
+
+  window.setTimeout(() => {
+    if (state.currentIndex < state.pillars.length - 1) {
+      state.currentIndex += 1;
+      renderQuestion();
+    } else {
+      renderTeaseLoading();
+    }
+  }, 500);
+}
+
+function renderTeaseLoading() {
+  stage.innerHTML = `<div class="card"><p class="muted">Scoring your answers…</p></div>`;
+  fetchPreview();
+}
+
+async function fetchPreview() {
+  try {
+    const res = await fetch('/api/preview', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ answers: state.answers }),
+    });
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+      stage.innerHTML = `<div class="card"><p class="error-text">${escapeHtml(data.message || 'Something went wrong scoring your answers.')}</p></div>`;
+      return;
+    }
+    state.preview = data;
+    renderTease();
+  } catch (err) {
+    stage.innerHTML = `<div class="card"><p class="error-text">Network error — please refresh and try again.</p></div>`;
+  }
+}
+
+/**
+ * Real teaser: a band-specific headline (always shown), a supporting line
+ * that swaps to the fixed no-constraint copy when nothing cleared the
+ * eligibility floor, and the actual primary constraint name (or the
+ * no-constraint message) in the highlighted box — matching the real WPRA
+ * tease screen rather than generic placeholder copy.
+ */
 function renderTease() {
+  const { band, bandColor, bandBg, teaseHeadline, teaseCopy, primaryConstraintName, noConstraintMessage } = state.preview;
+
+  const constraintBlock = primaryConstraintName
+    ? `
+      <p class="tease-label">Your biggest limitation appears to be:</p>
+      <h3>${escapeHtml(primaryConstraintName)}</h3>
+    `
+    : `<h3>${escapeHtml(noConstraintMessage)}</h3>`;
+
   stage.innerHTML = `
     <div class="card">
-      <h1>Your results are ready</h1>
-      <p>We've scored your answers against Fresh Egg's Data &amp; Analytics Maturity model — including where your biggest opportunity for improvement sits right now.</p>
-      <p class="muted">Enter your details to see your full maturity band, your key result, and what it means for your business.</p>
-      <button class="primary-btn" id="continue-btn" type="button">See my full results</button>
+      <span class="band-badge" style="background:${escapeHtml(bandBg)}; color:${escapeHtml(bandColor)};">
+        <span class="band-dot" style="background:${escapeHtml(bandColor)}"></span>${escapeHtml(band)}
+      </span>
+      <p class="tease-prefix">The assessment indicates your organisation is at a <strong>${escapeHtml(band)}</strong> level.</p>
+      <h1>${escapeHtml(teaseHeadline)}</h1>
+      <p>${escapeHtml(teaseCopy)}</p>
+      <div class="constraint-box">${constraintBlock}</div>
+      <p class="tease-incentive">Unlock your full maturity score, a complete breakdown of every pillar, and the clearest next step for your organisation.</p>
+      <button class="primary-btn" id="continue-btn" type="button">
+        Continue to full diagnosis <span class="arrow">→</span>
+      </button>
     </div>
   `;
   document.getElementById('continue-btn').addEventListener('click', renderEmailGate);
@@ -73,7 +138,7 @@ function renderTease() {
 
 function renderEmailGate(errorMessage) {
   stage.innerHTML = `
-    <div class="card">
+    <div class="card card--boxed">
       <h2>Get your full results</h2>
       <p class="muted">We'll also send a copy to your inbox.</p>
       ${errorMessage ? `<p class="error-text">${escapeHtml(errorMessage)}</p>` : ''}
@@ -100,7 +165,7 @@ function renderEmailGate(errorMessage) {
           <label for="company">Company</label>
           <input id="company" name="company_name" required />
         </div>
-        <button class="primary-btn" type="submit" id="submit-btn">Get my results</button>
+        <button class="primary-btn primary-btn--block" type="submit" id="submit-btn">Get my results</button>
       </form>
     </div>
   `;
@@ -140,7 +205,7 @@ function renderEmailGate(errorMessage) {
 }
 
 function renderResults(result) {
-  const accent = BAND_ACCENT[result.band] || 'var(--ink)';
+  const accent = BAND_ACCENT[result.band] || 'var(--brand-raven)';
 
   const primaryHtml = result.primaryConstraint
     ? `
@@ -152,13 +217,13 @@ function renderResults(result) {
     : `
       <div class="constraint-box">
         <h3>No significant limitation found</h3>
-        <p>Your answers didn't flag any single area as a blocker to your data maturity.</p>
+        <p>In our experience, most reviews find additional opportunities even for strong-performing organisations.</p>
       </div>
     `;
 
   stage.innerHTML = `
-    <div class="card">
-      <span class="band-badge" style="background:${accent}22; color:${accent === 'var(--ink)' ? 'var(--ink)' : '#1c1c1c'}">
+    <div class="card card--boxed">
+      <span class="band-badge" style="background:${accent}22;">
         <span class="band-dot" style="background:${accent}"></span>${escapeHtml(result.band)}
       </span>
       <h1>${escapeHtml(result.headline)}</h1>

@@ -18,7 +18,12 @@
 
 const express = require('express');
 const { calculateResult } = require('../lib/calculateResult');
-const { buildWhatThisMeansHtml, buildSecondaryConstraintsHtml } = require('../lib/copy');
+const {
+  buildWhatThisMeansHtml,
+  buildSecondaryConstraintsHtml,
+  NO_CONSTRAINT_NAME,
+  NO_CONSTRAINT_RESULTS_MESSAGE,
+} = require('../lib/copy');
 const { PILLARS } = require('../config/assessment.config');
 
 const router = express.Router();
@@ -61,17 +66,40 @@ router.post('/api/submit', async (req, res) => {
   const company = str('company_name');
   const userName = [firstName, lastName].filter(Boolean).join(' ') || email; // resolved once, here
 
-  const whatThisMeansHtml = buildWhatThisMeansHtml(result.band, result.primaryConstraint);
+  const whatThisMeansHtml = buildWhatThisMeansHtml(result.band);
   const secondaryConstraintsHtml = buildSecondaryConstraintsHtml(result.secondaryConstraints);
 
   const assessmentPayload = {
+    // Both forms kept, deliberately: the user email's greeting wants a single
+    // joined `user_name`, but the sales notification wants first/last split
+    // out separately (a real CRM-style lead card). Sending both from this one
+    // place — rather than each template re-deriving what it needs — is
+    // exactly the "confirm which field(s) the template actually needs" fix
+    // the spec called out after WPRA's user_name mismatch.
     user_name: userName,
+    user_firstname: firstName,
+    user_surname: lastName,
     company_name: company,
     band: result.band.name,
+    band_color: result.band.emailAccent.text,
+    band_bg: result.band.emailAccent.bg,
     headline: result.band.headline,
+    copy: result.band.intro,
     total_score: result.totalScore,
-    primary_constraint_name: result.primaryConstraint ? result.primaryConstraint.name : '',
-    primary_constraint_description: result.primaryConstraint ? result.primaryConstraint.description : '',
+    recommended_service: result.band.recommendedService,
+    // has_constraint drives the {% if %} branch in the sales template —
+    // more robust than the sales template string-matching against the
+    // fallback label, which would silently break if the wording ever changes.
+    has_constraint: Boolean(result.primaryConstraint),
+    // Fixed: previously sent an empty string with no fallback wording when no
+    // pillar cleared the eligibility floor — the email would have rendered a
+    // blank name/description instead of the "no constraint found" copy.
+    primary_constraint_name: result.primaryConstraint
+      ? result.primaryConstraint.name
+      : NO_CONSTRAINT_NAME,
+    primary_constraint_description: result.primaryConstraint
+      ? result.primaryConstraint.description
+      : NO_CONSTRAINT_RESULTS_MESSAGE,
     secondary_constraints_html: secondaryConstraintsHtml,
     what_this_means_html: whatThisMeansHtml,
   };

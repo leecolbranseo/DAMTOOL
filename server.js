@@ -1,30 +1,21 @@
-// server.js
+// server.js — local development entry point.
+//
+// Cloudflare deployment uses worker-entry.js instead (see wrangler.jsonc).
+// Both share the exact same route definitions via lib/createApp.js, so
+// local behavior and deployed behavior can't quietly drift apart.
+
 require('dotenv').config();
 const express = require('express');
 const path = require('path');
-const { PILLARS } = require('./config/assessment.config');
-const submitRouter = require('./routes/submit');
+const createApp = require('./lib/createApp');
 
-const app = express();
 const PORT = process.env.PORT || 3000;
+const app = createApp();
 
-app.use(express.json());
+// Static file serving — local-only. On Cloudflare this is handled by the
+// Workers "assets" feature instead (public/ has no Express involved there,
+// since Workers have no filesystem for express.static to read from).
 app.use(express.static(path.join(__dirname, 'public')));
-
-// Serves the question set to the front end (answers scores included —
-// this is a concept build, not a production security boundary).
-app.get('/api/questions', (_req, res) => {
-  res.json({
-    pillars: PILLARS.map((p) => ({
-      id: p.id,
-      label: p.label,
-      question: p.question,
-      options: p.options.map((o) => ({ key: o.key, text: o.text })),
-    })),
-  });
-});
-
-app.use(submitRouter);
 
 app.listen(PORT, () => {
   console.log(`Data & Analytics Maturity Assessment concept running at http://localhost:${PORT}`);

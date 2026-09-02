@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Inter', Arial, sans-serif; background-color: #f4f4f4;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f4f4f4; padding: 20px 0;">
+        <tr>
+            <td align="center">
+                <table width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 0;">
+
+                    <!-- Fresh Egg Logo -->
+                    <tr>
+                        <td style="background-color: #1d1d1d; padding: 30px 20px; text-align: center;">
+                            <img src="https://cdn.freshegg.co.uk/m/0/fresh-egg-default-logo.png" alt="Fresh Egg" style="max-width: 200px; height: auto; display: block; margin: 0 auto;">
+                        </td>
+                    </tr>
+
+                    <!-- Header -->
+                    <tr>
+                        <td style="background-color: #1d1d1d; padding: 20px 30px 40px 30px; text-align: center; border-top: 1px solid #333;">
+                            <h1 style="margin: 0 0 8px 0; font-size: 28px; color: #ffffff; font-weight: 700;">Your Data &amp; Analytics Maturity Diagnosis</h1>
+                            <p style="margin: 0; font-size: 16px; color: rgba(255, 255, 255, 0.8);">Maturity Assessment for {{ params.company_name }}</p>
+                        </td>
+                    </tr>
+
+                    <!-- Body Content -->
+                    <tr>
+                        <td style="padding: 40px 30px;">
+
+                            <!-- Personal Greeting -->
+                            <p style="font-size: 16px; color: #1d1d1d; margin: 0 0 20px 0;">Hi {{ params.user_name }},</p>
+
+                            <p style="font-size: 16px; color: #1d1d1d; line-height: 1.6; margin: 0 0 30px 0;">
+                                Thank you for completing the Data &amp; Analytics Maturity Assessment. Based on your responses, here's your complete diagnostic breakdown.
+                            </p>
+
+                            <!-- Main Result Box -->
+                            <div style="background: #eeeeee; border-left: 4px solid #ff7751; padding: 30px; margin: 30px 0; text-align: center;">
+                                <p style="margin: 0 0 8px 0; font-size: 11px; color: #1d1d1d; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700; background: {{ params.band_bg }}; color: {{ params.band_color }}; display: inline-block; padding: 6px 12px;">{{ params.band }}</p>
+                                <p style="margin: 16px 0 12px 0; font-size: 24px; font-weight: 700; color: #1d1d1d; line-height: 1.2;">{{ params.headline }}</p>
+                                <p style="margin: 0; font-size: 15px; color: #6B6B6B; line-height: 1.6;">{{ params.copy }}</p>
+                            </div>
+
+                            <!-- Maturity Score -->
+                            <h2 style="font-size: 20px; color: #1d1d1d; margin: 30px 0 16px 0;">Your Maturity Score</h2>
+
+                            <div style="background: #f9f9f9; padding: 20px; margin-bottom: 30px; text-align: center;">
+                                <p style="margin: 0 0 12px 0; font-size: 14px; color: #6B6B6B; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Out of a possible 28</p>
+                                <p style="font-size: 36px; font-weight: 700; color: {{ params.band_color }}; margin: 0;">{{ params.total_score }} / 28</p>
+                            </div>
+
+                            <!-- Primary Constraint -->
+                            <h2 style="font-size: 20px; color: #1d1d1d; margin: 30px 0 16px 0;">Your Biggest Opportunity</h2>
+
+                            <div style="background: #eeeeee; border-left: 4px solid #ff7751; padding: 20px; margin-bottom: 20px;">
+                                <p style="font-weight: 700; margin: 0 0 12px 0; color: #1d1d1d; font-size: 18px;">{{ params.primary_constraint_name }}</p>
+                                <p style="margin: 0; font-size: 15px; color: #1d1d1d; line-height: 1.6;">{{ params.primary_constraint_description }}</p>
+                            </div>
+
+                            <!-- Secondary Constraints -->
+                            <h2 style="font-size: 20px; color: #1d1d1d; margin: 30px 0 16px 0;">Other Areas to Watch</h2>
+
+                            <div style="background: #ffffff; padding: 20px; margin-bottom: 30px; border: 1px solid #E5E5E5;">
+                           {{ params.secondary_constraints_html | safe }}                            </div>
+
+                            <!-- Commercial Impact -->
+                            <h2 style="font-size: 20px; color: #1d1d1d; margin: 30px 0 16px 0;">What This Means for Your Business</h2>
+
+                            <div style="background: #f9f9f9; padding: 20px; margin-bottom: 30px;">
+                            {{ params.what_this_means_html | safe }}
+                            </div>
+
+                            <!-- Maturity Comparison -->
+                            <h2 style="font-size: 20px; color: #1d1d1d; margin: 30px 0 16px 0;">How Data-Mature Organisations Operate</h2>
+
+                            <div style="background: #eeeeee; padding: 24px; margin-bottom: 30px;">
+                                <p style="margin: 0 0 16px 0; font-size: 15px; color: #1d1d1d; line-height: 1.6;">
+                                    Organisations at the top of the data maturity curve build data and analytics capability designed to compound over time. They are able to:
+                                </p>
+                                <ul style="margin: 0; padding-left: 0; list-style: none;">
+                                    <li style="padding-left: 24px; position: relative; margin-bottom: 12px; font-size: 15px; color: #1d1d1d; line-height: 1.6;">
+                                        <span style="position: absolute; left: 0; color: #41cc9d; font-weight: 700;">•</span>
+                                        Access clean, reliable data on demand
+                                    </li>
+                                    <li style="padding-left: 24px; position: relative; margin-bottom: 12px; font-size: 15px; color: #1d1d1d; line-height: 1.6;">
+                                        <span style="position: absolute; left: 0; color: #41cc9d; font-weight: 700;">•</span>
+                                        Work from a single, trusted view of the business
+                                    </li>
+                                    <li style="padding-left: 24px; position: relative; margin-bottom: 12px; font-size: 15px; color: #1d1d1d; line-height: 1.6;">
+                                        <span style="position: absolute; left: 0; color: #41cc9d; font-weight: 700;">•</span>
+                                        Turn insight into action quickly
+                                    </li>
+                                    <li style="padding-left: 24px; position: relative; margin-bottom: 0; font-size: 15px; color: #1d1d1d; line-height: 1.6;">
+                                        <span style="position: absolute; left: 0; color: #41cc9d; font-weight: 700;">•</span>
+                                        Personalise experiences using real-time data
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <!-- CTA -->
+                            <div style="background: #1d1d1d; padding: 32px 24px; text-align: center; margin: 30px 0 0 0;">
+                                <h3 style="color: #ffffff; font-size: 22px; margin: 0 0 12px 0; font-weight: 700;">Ready to build a stronger data foundation?</h3>
+                                <p style="color: rgba(255, 255, 255, 0.8); font-size: 15px; margin: 0 0 24px 0; line-height: 1.6;">
+                                    Our Data Landscape Audit identifies exactly what's holding your data maturity back and creates a prioritised roadmap for improvement.
+                                </p>
+                                <!-- TODO: confirm real landing page URL before launch — placeholder below -->
+                                <a href="https://www.freshegg.co.uk/data-landscape-audit/" style="display: inline-block; background: #41cc9d; color: #1d1d1d; padding: 16px 32px; text-decoration: none; font-weight: 700; font-size: 16px;">Book a Data Landscape Audit</a>
+                            </div>
+
+                        </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                        <td style="background-color: #eeeeee; padding: 24px 30px; text-align: center;">
+                            <p style="margin: 0 0 8px 0; font-size: 14px; color: #1d1d1d; font-weight: 600;">Fresh Egg</p>
+                            <p style="margin: 0; font-size: 12px; color: #999999; line-height: 1.6;">
+                                Award-winning digital performance agency<br>
+                                <a href="https://www.freshegg.co.uk" style="color: #41cc9d; text-decoration: none;">www.freshegg.co.uk</a>
+                            </p>
+                        </td>
+                    </tr>
+
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

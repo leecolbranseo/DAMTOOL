@@ -1,15 +1,8 @@
 {
-  // Cloudflare Worker config. "main" is the API entry point (worker-entry.js);
-  // "assets.directory" serves public/ directly with no Express involved.
-  // By default, a request that matches a real file in assets.directory is
-  // served as a static file; anything else (including all /api/* routes)
-  // falls through to the Worker. Verify this fallback behavior against
-  // Cloudflare's current docs if routing doesn't behave as expected —
-  // https://developers.cloudflare.com/workers/tutorials/deploy-an-express-app/
   "name": "dam-tool-concept",
   "main": "worker-entry.js",
   "compatibility_date": "2026-09-01",
-  "compatibility_flags": ["nodejs_compat"],
+  "compatibility_flags": ["nodejs_compat_v2"],
   "assets": {
     "directory": "./public"
   }

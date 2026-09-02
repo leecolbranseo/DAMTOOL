@@ -1,21 +1,4 @@
 // routes/submit.js
-//
-// POST /api/submit — receives quiz answers + contact details, scores them
-// server-side (single source of truth, not trusting client-calculated
-// results), and sends the two Brevo emails (mocked here for local testing).
-//
-// WPRA lessons applied:
-// - No hardcoded Brevo API key fallback — env only, and missing key just
-//   switches email sending to "mock" mode rather than crashing, so this is
-//   testable without real Brevo credentials.
-// - Sales recipient email from env/config, not hardcoded in source.
-// - Required-field validation does NOT include primary_constraint_name —
-//   a "no constraint found" result is a legitimate, valid submission.
-// - Name fields resolved explicitly: front end sends user_firstname /
-//   user_surname separately (never a combined user_name), and this file is
-//   the one place that joins them into `user_name` for the email template —
-//   avoiding WPRA's suspected firstname/surname vs user_name mismatch.
-
 const express = require('express');
 const { calculateResult } = require('../lib/calculateResult');
 const {
@@ -25,6 +8,7 @@ const {
   NO_CONSTRAINT_RESULTS_MESSAGE,
 } = require('../lib/copy');
 const { PILLARS } = require('../config/assessment.config');
+const { sendAssessmentEmails } = require('../lib/sendBrevo');
 
 const router = express.Router();
 
@@ -64,18 +48,12 @@ router.post('/api/submit', async (req, res) => {
   const lastName = str('user_surname');
   const jobTitle = str('user_jobtitle');
   const company = str('company_name');
-  const userName = [firstName, lastName].filter(Boolean).join(' ') || email; // resolved once, here
+  const userName = [firstName, lastName].filter(Boolean).join(' ') || email;
 
   const whatThisMeansHtml = buildWhatThisMeansHtml(result.band);
   const secondaryConstraintsHtml = buildSecondaryConstraintsHtml(result.secondaryConstraints);
 
   const assessmentPayload = {
-    // Both forms kept, deliberately: the user email's greeting wants a single
-    // joined `user_name`, but the sales notification wants first/last split
-    // out separately (a real CRM-style lead card). Sending both from this one
-    // place — rather than each template re-deriving what it needs — is
-    // exactly the "confirm which field(s) the template actually needs" fix
-    // the spec called out after WPRA's user_name mismatch.
     user_name: userName,
     user_firstname: firstName,
     user_surname: lastName,
@@ -87,16 +65,8 @@ router.post('/api/submit', async (req, res) => {
     copy: result.band.intro,
     total_score: result.totalScore,
     recommended_service: result.band.recommendedService,
-    // has_constraint drives the {% if %} branch in the sales template —
-    // more robust than the sales template string-matching against the
-    // fallback label, which would silently break if the wording ever changes.
     has_constraint: Boolean(result.primaryConstraint),
-    // Fixed: previously sent an empty string with no fallback wording when no
-    // pillar cleared the eligibility floor — the email would have rendered a
-    // blank name/description instead of the "no constraint found" copy.
-    primary_constraint_name: result.primaryConstraint
-      ? result.primaryConstraint.name
-      : NO_CONSTRAINT_NAME,
+    primary_constraint_name: result.primaryConstraint ? result.primaryConstraint.name : NO_CONSTRAINT_NAME,
     primary_constraint_description: result.primaryConstraint
       ? result.primaryConstraint.description
       : NO_CONSTRAINT_RESULTS_MESSAGE,
@@ -104,7 +74,14 @@ router.post('/api/submit', async (req, res) => {
     what_this_means_html: whatThisMeansHtml,
   };
 
-  const emailStatus = await sendAssessmentEmails(email, userName, jobTitle, assessmentPayload);
+  const emailStatus = await sendAssessmentEmails({
+    apiKey: process.env.BREVO_API_KEY,
+    salesEmail: process.env.DAM_SALES_EMAIL,
+    email,
+    userName,
+    jobTitle,
+    assessmentPayload,
+  });
 
   return res.status(200).json({
     success: true,
@@ -121,37 +98,5 @@ router.post('/api/submit', async (req, res) => {
     },
   });
 });
-
-/**
- * Sends the user's results email + internal sales notification via Brevo.
- * If BREVO_API_KEY isn't set, logs the payloads instead of calling the API —
- * this is what makes the concept testable without real credentials.
- */
-async function sendAssessmentEmails(email, userName, jobTitle, assessment) {
-  const apiKey = process.env.BREVO_API_KEY;
-  const salesEmail = process.env.DAM_SALES_EMAIL || 'businessdevelopment@freshegg.com';
-
-  const userParams = { ...assessment, user_email: email, user_jobtitle: jobTitle };
-
-  if (!apiKey) {
-    console.log('\n[MOCK BREVO] No BREVO_API_KEY set — logging instead of sending.\n');
-    console.log('[MOCK BREVO] → user email to:', email);
-    console.log(JSON.stringify(userParams, null, 2));
-    console.log('[MOCK BREVO] → sales notification to:', salesEmail);
-    console.log(JSON.stringify({ ...userParams, contact_email: email }, null, 2));
-    return 'mocked';
-  }
-
-  // Real send path — left as a stub. Wire up sendBrevoTransactionalEmail here
-  // when real template IDs + API key are available, following wpra-lead.ts's
-  // pattern (Promise.all for user + sales sends, log failures, never throw).
-  try {
-    // await sendBrevoTransactionalEmail({...}, apiKey);
-    return 'sent';
-  } catch (err) {
-    console.error('dam-tool: Brevo email error:', err);
-    return 'failed';
-  }
-}
 
 module.exports = router;

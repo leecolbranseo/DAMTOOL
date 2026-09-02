@@ -1,21 +1,3 @@
-// worker-entry.js — Cloudflare Workers entry point.
-//
-// Deliberately does NOT use Express. Requiring the `express` package on
-// Workers triggers a real Cloudflare compat bug: Express's own top-level
-// code does `exports.json = bodyParser.json`, which eagerly triggers
-// body-parser's lazy .json getter and pulls in raw-body -> iconv-lite,
-// crashing with "require_streams(...) is not a function" (error 10021) —
-// regardless of the nodejs_compat flag version, and regardless of whether
-// app code ever calls express.json() itself. There's no app-level fix;
-// the only way around it is not importing `express` in this bundle at all.
-//
-// This re-implements the same three API routes as native Workers fetch
-// handlers (Web standard Request/Response), calling the exact same pure
-// scoring/copy functions used by the Express version in lib/createApp.js
-// (used for local dev via server.js) — so the actual business logic can't
-// drift between environments, even though the request-handling glue here
-// is necessarily separate from the Express routes.
-
 const { calculateResult } = require('./lib/calculateResult');
 const {
   buildWhatThisMeansHtml,
@@ -26,6 +8,7 @@ const {
   NO_CONSTRAINT_RESULTS_MESSAGE,
 } = require('./lib/copy');
 const { PILLARS } = require('./config/assessment.config');
+const { sendAssessmentEmails } = require('./lib/sendBrevo');
 
 const REQUIRED_SUBMIT_FIELDS = ['user_firstname', 'user_surname', 'user_jobtitle', 'company_name', 'email'];
 const isValidEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
@@ -85,7 +68,7 @@ async function handlePreview(request) {
   });
 }
 
-async function handleSubmit(request) {
+async function handleSubmit(request, env) {
   let body;
   try {
     body = await request.json();
@@ -140,18 +123,26 @@ async function handleSubmit(request) {
     recommended_service: result.band.recommendedService,
     has_constraint: Boolean(result.primaryConstraint),
     primary_constraint_name: result.primaryConstraint ? result.primaryConstraint.name : NO_CONSTRAINT_NAME,
-    primary_constraint_description: result.primaryConstraint ? result.primaryConstraint.description : NO_CONSTRAINT_RESULTS_MESSAGE,
+    primary_constraint_description: result.primaryConstraint
+      ? result.primaryConstraint.description
+      : NO_CONSTRAINT_RESULTS_MESSAGE,
     secondary_constraints_html: secondaryConstraintsHtml,
     what_this_means_html: whatThisMeansHtml,
   };
 
-  console.log('[MOCK BREVO] user email to:', email, JSON.stringify({ ...assessmentPayload, user_email: email, user_jobtitle: jobTitle }));
-  console.log('[MOCK BREVO] sales notification to: businessdevelopment@freshegg.com', JSON.stringify({ ...assessmentPayload, user_email: email, user_jobtitle: jobTitle, contact_email: email }));
+  const emailStatus = await sendAssessmentEmails({
+    apiKey: env && env.BREVO_API_KEY,
+    salesEmail: env && env.DAM_SALES_EMAIL,
+    email,
+    userName,
+    jobTitle,
+    assessmentPayload,
+  });
 
   return json({
     success: true,
     message: 'Assessment submitted',
-    emailStatus: 'mocked',
+    emailStatus,
     result: {
       band: result.band.name,
       headline: result.band.headline,
@@ -165,7 +156,7 @@ async function handleSubmit(request) {
 }
 
 export default {
-  async fetch(request) {
+  async fetch(request, env) {
     const url = new URL(request.url);
 
     if (request.method === 'GET' && url.pathname === '/api/questions') {
@@ -175,7 +166,7 @@ export default {
       return handlePreview(request);
     }
     if (request.method === 'POST' && url.pathname === '/api/submit') {
-      return handleSubmit(request);
+      return handleSubmit(request, env);
     }
 
     return new Response('Not found', { status: 404 });
